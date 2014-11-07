@@ -137,4 +137,5 @@ micro: all
 cub: OPT_DEFS += -DKEYMAP_CUB
 cub: all
 
-
+daniel: OPT_DEFS += -DKEYMAP_DANIEL
+daniel: all
