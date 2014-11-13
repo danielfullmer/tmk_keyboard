@@ -5,19 +5,19 @@ static const uint8_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         NO,  Q,   W,   F,   P,   G,   VOLU,
         TAB, A,   S,   E,   T,   D,
         LSFT,Z,   X,   C,   V,   B,   VOLD,
-        LGUI,MPRV,MSTP,MPLY,MNXT,
-                                      FN4, NO,
+        LGUI,MPRV,MPLY,MNXT,LBRC,
+                                      NO,  NO,
                                            NO,
-                                 SPC, FN1, NO,
+                                 SPC, FN1, LALT,
         // right hand
              FN0, 7,   8,   9,   0,   MINS,EQL,
-             NO,  J,   L,   U,   Y,   SCLN,BSLS,
+             FN4, J,   L,   U,   Y,   SCLN,BSLS,
                   H,   N,   I,   O,   R,   QUOT,
-             NO,  K,   M,   COMM,DOT, SLSH,RSFT,
-                       NO,  NO,  NO,  NO,  RGUI,
-        NO,  NO,
-        NO,
-        NO,  FN2, FN3
+             FN5, K,   M,   COMM,DOT, SLSH,RSFT,
+                       RBRC,NO  ,NO,  NO,  RGUI,
+        PGUP,DEL,
+        PGDN,
+        RALT,FN2, FN3
     ),
 
     KEYMAP(  // Layer1: F-keys, arrows, etc
@@ -38,7 +38,7 @@ static const uint8_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                        TRNS,TRNS,TRNS,TRNS,TRNS,
         TRNS,TRNS,
         TRNS,
-        TRNS,BSPC,ENT
+        TRNS,BSPC,TRNS
     ),
 
     KEYMAP(  // Layer2: numpad
@@ -145,7 +145,8 @@ static const uint16_t PROGMEM fn_actions[] = {
     ACTION_LAYER_TAP_KEY(2, KC_BSPC),               // FN2
     ACTION_LAYER_TAP_KEY(1, KC_ENT),                // FN3
 
-    ACTION_LAYER_SET(4, ON_BOTH),                   // FN4 - Qwerty Layout
+    ACTION_LAYER_SET(0, ON_BOTH),                   // FN4 - Assetmak Layout
+    ACTION_LAYER_SET(3, ON_BOTH),                   // FN5 - Qwerty Layout
 };
 
 void action_function(keyrecord_t *event, uint8_t id, uint8_t opt)
