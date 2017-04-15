@@ -27,7 +27,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "timer.h"
 #include "matrix.h"
 #include "hhkb_avr.h"
+#include <avr/wdt.h>
+#include "suspend.h"
+#include "lufa.h"
 
+
+// matrix power saving
+#define MATRIX_POWER_SAVE       10000
+static uint32_t matrix_last_modified = 0;
 
 // matrix state buffer(1:on, 0:off)
 static matrix_row_t *matrix;
@@ -35,18 +42,6 @@ static matrix_row_t *matrix_prev;
 static matrix_row_t _matrix0[MATRIX_ROWS];
 static matrix_row_t _matrix1[MATRIX_ROWS];
 
-
-inline
-uint8_t matrix_rows(void)
-{
-    return MATRIX_ROWS;
-}
-
-inline
-uint8_t matrix_cols(void)
-{
-    return MATRIX_COLS;
-}
 
 void matrix_init(void)
 {
@@ -72,7 +67,8 @@ uint8_t matrix_scan(void)
     matrix_prev = matrix;
     matrix = tmp;
 
-    KEY_POWER_ON();
+    // power on
+    if (!KEY_POWER_STATE()) KEY_POWER_ON();
     for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
         for (uint8_t col = 0; col < MATRIX_COLS; col++) {
             KEY_SELECT(row, col);
@@ -124,32 +120,25 @@ uint8_t matrix_scan(void)
 
             // NOTE: KEY_STATE keep its state in 20us after KEY_ENABLE.
             // This takes 25us or more to make sure KEY_STATE returns to idle state.
+#ifdef HHKB_JP
+            // Looks like JP needs faster scan due to its twice larger matrix
+            // or it can drop keys in fast key typing
+            _delay_us(30);
+#else
             _delay_us(75);
+#endif
         }
+        if (matrix[row] ^ matrix_prev[row]) matrix_last_modified = timer_read32();
     }
-    KEY_POWER_OFF();
+    // power off
+    if (KEY_POWER_STATE() &&
+            (USB_DeviceState == DEVICE_STATE_Suspended ||
+             USB_DeviceState == DEVICE_STATE_Unattached ) &&
+            timer_elapsed32(matrix_last_modified) > MATRIX_POWER_SAVE) {
+        KEY_POWER_OFF();
+        suspend_power_down();
+    }
     return 1;
-}
-
-bool matrix_is_modified(void)
-{
-    for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-        if (matrix[i] != matrix_prev[i])
-            return true;
-    }
-    return false;
-}
-
-inline
-bool matrix_has_ghost(void)
-{
-    return false;
-}
-
-inline
-bool matrix_is_on(uint8_t row, uint8_t col)
-{
-    return (matrix[row] & (1<<col));
 }
 
 inline
@@ -158,10 +147,9 @@ matrix_row_t matrix_get_row(uint8_t row)
     return matrix[row];
 }
 
-void matrix_print(void)
-{
-    print("\nr/c 01234567\n");
-    for (uint8_t row = 0; row < matrix_rows(); row++) {
-        xprintf("%02X: %08b\n", row, bitrev(matrix_get_row(row)));
-    }
+void matrix_power_up(void) {
+    KEY_POWER_ON();
+}
+void matrix_power_down(void) {
+    KEY_POWER_OFF();
 }
