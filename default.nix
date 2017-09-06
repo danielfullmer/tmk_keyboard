@@ -2,7 +2,7 @@ with import <nixpkgs> {};
 
 stdenv.mkDerivation {
   name = "tmk_keyboard";
-  src = ./.;
+  src = lib.cleanSource ./.;
 
   buildInputs = [ avrgcclibc ];
 
@@ -12,6 +12,6 @@ stdenv.mkDerivation {
   '';
   installPhase = ''
     mkdir -p $out
-    cp $src/keyboard/dactyl/dactyl_pjrc.hex $out
+    cp dactyl_pjrc.hex $out
   '';
 }
